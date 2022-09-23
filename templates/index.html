@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>mpv-sub-streamer</title>
+</head>
+<style>
+    body {
+        background-color: #202020;
+        color: #bdbdbd;
+        font-family: "Local Noto Sans JP", "Noto Sans JP";
+    }
+
+    .controller {
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        margin-top: 10px;
+    }
+
+    .control {
+        background-color: rgba(25, 25, 25, 0.8);
+        width: 16.6%;
+        height: 70px;
+        font-size: 25px;
+        cursor: pointer;
+        color: #9d9d9d;
+        line-height: 100%;
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        overflow-wrap: break-word;
+    }
+
+    .text {
+        margin-top: 1%;
+        margin-left: 1.5%;
+        margin-right: 10%;
+        margin-bottom: 20%;
+        font-weight: 500;
+        font-size: 50px;
+
+    }
+</style>
+
+<body>
+
+    <div class="controller">
+        <button type="submit" class="control" id="sb">prev-sub</button>
+        <button type="submit" class="control" id="b">back</button>
+        <button type="submit" class="control" id="pp">play/pause</button>
+        <button type="submit" class="control" id="f">forward</button>
+        <button type="submit" class="control" id="sf">next-sub</button>
+        <button type="submit" class="control" id="anki">anki</button>
+    </div>
+
+    <br><br>
+
+    <div id="text" class="text"></div>
+
+    <script>
+
+        const log = (text, color) => {
+            document.getElementById('text').innerHTML = `<span>${text}</span><br>`;
+        };
+
+        function connect() {
+            const socket = new WebSocket('ws://' + location.host + '/subs');
+
+            socket.onmessage = function (e) {
+                log(e.data);
+            };
+
+            socket.onclose = function (e) {
+                console.log("closed");
+
+                setTimeout(function () {
+                    connect();
+                }, 1000);
+            };
+
+            socket.onerror = function (err) {
+                console.error("disconnected with error:", err);
+                socket.close();
+            };
+
+            socket.onopen = function () {
+                console.log("connected");
+            };
+        }
+
+        document.getElementById('pp').onclick = ev => {
+            ev.preventDefault();
+            fetch("/pp");
+        };
+        document.getElementById('sb').onclick = ev => {
+            ev.preventDefault();
+            fetch("/sb");
+        };
+        document.getElementById('b').onclick = ev => {
+            ev.preventDefault();
+            fetch("/b");
+        };
+        document.getElementById('f').onclick = ev => {
+            ev.preventDefault();
+            fetch("/f");
+        };
+        document.getElementById('sf').onclick = ev => {
+            ev.preventDefault();
+            fetch("/sf");
+        };
+        document.getElementById('anki').onclick = ev => {
+            ev.preventDefault();
+            fetch("/anki");
+        };
+
+        connect();
+    </script>
+</body>
+
+</html>
