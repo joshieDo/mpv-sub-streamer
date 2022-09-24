@@ -1,8 +1,10 @@
 import subprocess, time, sys
-from pyautogui import hotkey, press, hold
-
+from pyautogui import hotkey
 from flask import Flask, render_template, Response
 from flask_sock import Sock
+from manga_ocr import MangaOcr
+from PIL import Image
+import pyperclip
 
 
 def get_clipboard():
@@ -15,6 +17,11 @@ def get_clipboard():
         return data.decode()
     return "invalid"
 
+
+try:
+    mocr = MangaOcr("kha-white/manga-ocr-base", False)
+except:
+    print("Missing MangaOCR.")
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -82,6 +89,13 @@ def anki_media():
     return Response(status=200)
 
 
+@app.route("/clip")
+def clip():
+    res = mocr(Image.open("/tmp/kanji"))
+    pyperclip.copy(res)
+    return res
+
+
 if __name__ == "__main__":
     host, port = sys.argv[1].split(":")
-    app.run(host, port=port, debug=True)
+    app.run(host, port=port)
