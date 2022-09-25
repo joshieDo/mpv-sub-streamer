@@ -120,8 +120,8 @@ def clip():
         print("Missing jamdict")
 
     word = jam.lookup(lemma)
-    reading = word.entries[0].kana_forms
-    meaning = word.entries[0].senses
+    reading = word.entries[0].kana_forms[0]
+    meaning = str(word.entries[0].senses[0]).split("(")[0]
 
     return f"{lemma} | {reading} | {meaning}"
 
