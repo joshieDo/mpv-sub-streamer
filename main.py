@@ -2,7 +2,6 @@ import subprocess, time, sys
 from pyautogui import hotkey
 from flask import Flask, render_template, Response
 from flask_sock import Sock
-from manga_ocr import MangaOcr
 from PIL import Image
 import pyperclip
 
@@ -18,10 +17,27 @@ def get_clipboard():
     return "invalid"
 
 
+def process_tokens(tks):
+    doc = nlp(tks)
+    for sent in doc.sents:
+        for token in sent:
+            return token.lemma_
+
+
 try:
+    from manga_ocr import MangaOcr
+
     mocr = MangaOcr("kha-white/manga-ocr-base", False)
 except:
     print("Missing MangaOCR.")
+
+try:
+    import spacy
+
+    nlp = spacy.load("ja_ginza_electra")
+except:
+    print("Missing spacy_ginza_electra")
+
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -93,7 +109,21 @@ def anki_media():
 def clip():
     res = mocr(Image.open("/tmp/kanji"))
     pyperclip.copy(res)
-    return res
+
+    lemma = process_tokens(res)
+
+    try:
+        from jamdict import Jamdict
+
+        jam = Jamdict()
+    except:
+        print("Missing jamdict")
+
+    word = jam.lookup(lemma)
+    reading = word.entries[0].kana_forms
+    meaning = word.entries[0].senses
+
+    return f"{lemma} | {reading} | {meaning}"
 
 
 if __name__ == "__main__":
